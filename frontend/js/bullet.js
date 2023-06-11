@@ -2,8 +2,8 @@ class Bullet {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.visible = false;
-    this.active = false;
+    this.visible = true;
+    this.active = true;
   }
 
   moveUp() {
