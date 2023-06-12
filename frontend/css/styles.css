@@ -9,7 +9,7 @@ body {
   font-family: 'Orbitron', sans-serif;
 }
 
-#menu, #gameOver, #nextLevel  {
+#menu, #gameOver, #nextLevel, #input-section, #scoreboard, #back-button  {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -22,16 +22,40 @@ body {
   pointer-events: auto;
 }
 
-#gameOver, #nextLevel {
+table {
+  display: block;
+  background: black;
+  padding: 10px;
+  border-radius: 5px;
+  border-spacing: 15px;
+  color: rgb(6, 188, 43);
+}
+
+th {
+  text-decoration: solid;
+  font-size: 25px;
+}
+
+#gameOver, #nextLevel, #back-button {
   display: none;
+}
+
+#back-button {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: space-around;
+  justify-content: space-around;
+  top: 85%;
 }
 
 #gameOverText {
   color: rgb(171, 2, 2);
+  text-align: center;
 }
 
 #nextLevelText {
   color: rgb(162, 255, 33);
+  text-align: center;
 }
 
 button {
@@ -64,6 +88,7 @@ h1 {
   color: rgb(0, 110, 22);
   font-size: 40px;
   font-family: 'Orbitron', sans-serif;
+  text-align: center;
 }
 
 .boom {
@@ -86,5 +111,37 @@ h1 {
   }
 }
 
+#nick-input {
+  width: 200px;
+  height: 30px;
+  font-size: 20px;
+  color: darkgreen;
+  border: 2px solid darkgreen;
+  border-radius: 10px;
+  padding: 5px;
+  outline: none;
+}
 
+#start-button {
+  width: 240px;
+  height: 30px;
+  font-size: 18px;
+  color: white;
+  background-color: darkgreen;
+  border: none;
+  border-radius: 10px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+#input-section {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#start-button:hover {
+  transform: scale(1.1);
+}
 
