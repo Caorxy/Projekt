@@ -14,7 +14,11 @@ function animateBoom(alien) {
     boom.style.width = '32px';
     boom.style.height = '28px';
     // Set the background image to the alien image
-    boom.style.backgroundImage = 'url(frontend/assets/alien.png)';
+    if(alien instanceof AlienX){
+        boom.style.backgroundImage = 'url(frontend/assets/alienX.png)';
+    } else {
+        boom.style.backgroundImage = 'url(frontend/assets/alien.png)';
+    }
     // Set the initial opacity and scale of the element
     boom.style.opacity = '1';
     boom.style.transform = 'scale(1)';

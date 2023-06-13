@@ -16,7 +16,6 @@ class Bullet {
 
   start(x, y) {
     this.visible = true;
-    // Added this line to set the active property to true
     this.active = true;
     this.x = x;
     this.y = y;

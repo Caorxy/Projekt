@@ -17,7 +17,7 @@ class Alien {
         } else if (direction === 'left') {
           this.x -= 4;
         } else if (direction === 'down') {
-          this.y += 40;
+          this.y += 30;
         }
       }
   }

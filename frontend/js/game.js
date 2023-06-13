@@ -3,6 +3,8 @@ let canvas = document.getElementById('gameCanvas');
 let ctx = canvas.getContext('2d');
 let alienImg = new Image();
 alienImg.src = 'frontend/assets/alien.png';
+let alienXImg = new Image();
+alienXImg.src = 'frontend/assets/alienX.png';
 let startButton = document.getElementById('start');
 let scoreboardButton = document.getElementById('scoreBoardButton');
 let playAgain = document.getElementById('playagain');
@@ -17,9 +19,11 @@ let alienDirection = 'right';
 let moveDown = false;
 let tankDirection = null;
 let lastShotTime = 0;
+let lastShotTimeX = 0;
 let shotInterval = 200;
 let animations = 0;
 let bullets = [];
+let bulletsX = [];
 let tank = new Tank(canvas.width / 2 - 25, canvas.height - 50, 50, 10);
 let aliensKilled = 0;
 let aliensLoaded = false;
@@ -31,6 +35,7 @@ let startTime = 0;
 
 // Create game objects
 let aliens = [];
+let obstacles = [];
 let level = 1;
 
 //Load the aliens from the JSON file
@@ -41,9 +46,25 @@ function loadAliens() {
       const alienData = JSON.parse(xhr.responseText);
       // Clear the aliens array before pushing new data
       aliens.length = 0;
+      bullets.length = 0;
+      bulletsX.length = 0;
+      obstacles.length = 0;
       for (const data of alienData) {
-        aliens.push(new Alien(data.x, data.y));
+        switch(data.type) {
+          case "Alien":
+            aliens.push(new Alien(data.x, data.y));
+            break;
+          case "AlienX":
+            aliens.push(new AlienX(data.x, data.y));
+            break;
+          case "Obstacle":
+            obstacles.push(new Obstacle(data.x, data.y));
+            break;
+          default:
+            console.log("Unknown data type: " + data.type);
+        }
       }
+    
       // Start the game loop after the aliens are loaded
       aliensLoaded = true;
       animations = aliens.length;
@@ -76,6 +97,7 @@ function gameLoop() {
   
   drawAliens();
   moveAliens();
+  drawObstacles();
   drawTank();
   moveTank();
   drawScore();
@@ -106,6 +128,15 @@ function gameLoop() {
   }
   
   moveBullets();
+  hitBulletsX();
+  if(moveBulletsX()) {
+    // Show the gameOver
+    gameOver.style.display = 'flex';
+    // Save the score and nick of the player 
+    saveScore();
+    return; // Stop the game loop
+  }
+  
   
   // Check if all aliens are killed
   if (aliensKilled === aliens.length && animations === 0) {
@@ -128,7 +159,12 @@ function drawAliens(){
   // Draw aliens
   for (const alien of aliens) {
     if (alien.alive) {
-      ctx.drawImage(alienImg, alien.x, alien.y, 40, 35);
+      if( alien instanceof AlienX) {
+        ctx.drawImage(alienXImg, alien.x, alien.y, 40, 35);
+      }
+      else {
+        ctx.drawImage(alienImg, alien.x, alien.y, 40, 35);
+      }
     }
   }
 }
@@ -179,10 +215,17 @@ function drawTank(){
 }
 
 function moveTank(){
-  if (tankDirection === 'left') {
-    tank.x -= 10;
-  } else if (tankDirection === 'right') {
-    tank.x += 10;
+  if (!((tankDirection === 'right' && tank.x + 60 >= canvas.width) || (tankDirection === 'left' && tank.x <= 0))) {
+    tank.move(tankDirection);
+  }
+}
+
+function drawObstacles(){
+  for (const obstacle of obstacles) {
+    if(obstacle.visible) {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    }
   }
 }
 
@@ -208,8 +251,60 @@ function moveBullets(){
           score += level * 1000 / time;
         }
       }
+
+      // Check for collisions
+      for (const obstacle of obstacles) {
+        if (obstacle.visible && bullet.y <= obstacle.y + 30 && bullet.y >= obstacle.y && bullet.x >= obstacle.x && bullet.x <= obstacle.x + 30) {
+          obstacle.kill();
+          bullet.kill();
+        }
+      }
     }
   }
+}
+
+function hitBulletsX(){
+  for (const alien of aliens) {
+    if(alien.alive && alien instanceof AlienX) {
+        let currentTime = Date.now();
+        if (currentTime - alien.lastShotTimeX > alien.shotInterval+(Math.random()*100000)) {
+          let bulletX;
+          if(alienDirection == 'right')
+            bulletX = new BulletX(alien.x + 20, alien.y);
+          else 
+            bulletX = new BulletX(alien.x + 20, alien.y);
+          bulletsX.push(bulletX);
+          alien.lastShotTimeX = currentTime;
+        }
+      }
+  }
+}
+
+function moveBulletsX(){
+  // Modify this part of the code to move all the bullets in every frame
+  for (const bulletX of bulletsX) {
+    if(bulletX.visible == true && bulletX.active == true) {
+      // Draw bullet
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(bulletX.x, bulletX.y, 4, 10);
+      bulletX.moveDown();
+      
+      // Check for collisions
+      if (bulletX.y <= tank.y + tank.width && bulletX.y >= tank.y && bulletX.x >= tank.x && bulletX.x <= tank.x + tank.height) {
+        bulletX.kill();
+        return true; // Stop the game loop
+      }   
+    }
+
+    // Check for collisions
+    for (const obstacle of obstacles) {
+      if (obstacle.visible && bulletX.y <= obstacle.y + 30 && bulletX.y >= obstacle.y && bulletX.x >= obstacle.x && bulletX.x <= obstacle.x + 30) {
+        obstacle.kill();
+        bulletX.kill();
+      }
+    }
+  }
+  return false;
 }
 
 // Create a function to draw the score and the player's name on the canvas
